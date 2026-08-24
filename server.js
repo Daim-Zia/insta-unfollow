@@ -47,14 +47,23 @@ app.post('/api/login', async (req, res) => {
     broadcast('status', { waitingForLogin: true });
     const ok = await browser.waitForLogin(300000);
     if (ok) {
-      const page = await browser.getPage();
-      currentProfile = await instagram.getProfileInfo(page);
-      await browser.close();
-      await browser.launch(true);
-      broadcast('status', { waitingForLogin: false, loggedIn: true, profile: currentProfile });
-      res.json({ ok: true, profile: currentProfile });
+      // Send response immediately — don't block on profile fetch
+      res.json({ ok: true });
+      // Fetch profile in background, then restart headless
+      try {
+        const page = await browser.getPage();
+        currentProfile = await instagram.getProfileInfo(page);
+        await browser.close();
+        await browser.launch(true);
+        broadcast('status', { waitingForLogin: false, loggedIn: true, profile: currentProfile });
+      } catch (e) {
+        await browser.close().catch(() => {});
+        await browser.launch(true).catch(() => {});
+        broadcast('error', { message: 'Login succeeded but profile fetch failed: ' + e.message });
+      }
     } else {
       res.json({ ok: false, error: 'Login timeout' });
+      await browser.close().catch(() => {});
     }
   } catch (e) {
     res.json({ ok: false, error: e.message });
@@ -203,7 +212,7 @@ async function runAutomation(cfg) {
 
     state.save(progress);
     running = false;
-    broadcast('status', { message: 'Session complete', stats: state.getStats(progress) });
+    broadcast('status', { message: 'Session complete', running: false, paused: false, stats: state.getStats(progress) });
   } catch (e) {
     running = false;
     broadcast('error', { message: e.message });

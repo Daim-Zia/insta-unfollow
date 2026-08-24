@@ -62,6 +62,8 @@ function showDashboard(profile) {
     document.getElementById('profileUsername').textContent = profile.username;
     document.getElementById('profileStats').textContent = `${profile.following} following / ${profile.followers} followers`;
     document.getElementById('avatarPlaceholder').textContent = profile.username[0].toUpperCase();
+    document.getElementById('statFollowing').textContent = profile.following;
+    document.getElementById('statFollowers').textContent = profile.followers;
   }
 }
 
@@ -101,11 +103,33 @@ async function doLogin() {
   const btn = document.getElementById('loginBtn');
   btn.disabled = true;
   btn.textContent = 'Opening browser...';
+  document.getElementById('headerStatus').textContent = 'Waiting for login...';
+  document.getElementById('headerStatus').style.color = 'var(--warning)';
   const res = await fetch('/api/login', { method: 'POST' });
   const data = await res.json();
   btn.disabled = false;
   btn.textContent = 'Login with Instagram';
-  if (data.ok) showDashboard(data.profile);
+  if (data.ok) {
+    // Login succeeded, poll status until profile loads
+    pollForProfile();
+  } else {
+    addLog({ username: 'SYSTEM', result: 'error: ' + (data.error || 'Login failed') });
+    document.getElementById('headerStatus').textContent = 'Login failed';
+    document.getElementById('headerStatus').style.color = 'var(--danger)';
+  }
+}
+
+async function pollForProfile() {
+  for (let i = 0; i < 30; i++) {
+    await new Promise(r => setTimeout(r, 2000));
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    if (data.loggedIn && data.profile) {
+      handleStatus(data);
+      return;
+    }
+  }
+  addLog({ username: 'SYSTEM', result: 'error: Timed out waiting for profile' });
 }
 
 async function doStart() {
@@ -116,7 +140,7 @@ async function doStart() {
     maxDelay: parseInt(document.getElementById('maxDelay').value) || 7,
     breakEvery: parseInt(document.getElementById('breakEvery').value) || 60,
     breakMin: parseInt(document.getElementById('breakMin').value) || 1,
-    breakMax: parseInt(document.getElementById('breakMax').value) || 2,
+    breakMax: (parseInt(document.getElementById('breakMin').value) || 1) + 1,
   };
   await fetch('/api/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cfg) });
   updateButtons(true, false);
