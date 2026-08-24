@@ -23,7 +23,7 @@ Mass unfollow Instagram non-followers using browser automation. Log in with your
 ### Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/insta-unfollow.git
+git clone https://github.com/DAIM-ZIA/insta-unfollow.git
 cd insta-unfollow
 npm install
 npx playwright install chromium
