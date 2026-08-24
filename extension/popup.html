@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Insta-Unfollow</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+        <h1>Insta-Unfollow</h1>
+      </div>
+      <div class="badge" id="statusBadge">Offline</div>
+    </header>
+
+    <!-- Login prompt -->
+    <section id="loginSection">
+      <p class="info">Click below to connect your Instagram account.</p>
+      <p class="hint">Make sure you're logged in to Instagram in your browser.</p>
+      <button class="btn btn-primary full" id="loginBtn" onclick="doLogin()">Connect Instagram</button>
+    </section>
+
+    <!-- Dashboard -->
+    <section id="dashboardSection" class="hidden">
+      <div class="profile">
+        <div class="avatar" id="avatar"></div>
+        <div>
+          <div class="username" id="username">-</div>
+          <div class="counts" id="counts">- following / - followers</div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat">
+          <div class="stat-value" id="statFollowing">-</div>
+          <div class="stat-label">Following</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="statFollowers">-</div>
+          <div class="stat-label">Followers</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="statNonFollowers">-</div>
+          <div class="stat-label">Non-Followers</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="statUnfollowed">0</div>
+          <div class="stat-label">Unfollowed</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-primary" id="startBtn" onclick="doStart()">Start Unfollowing</button>
+        <button class="btn btn-secondary hidden" id="pauseBtn" onclick="doPause()">Pause</button>
+        <button class="btn btn-danger hidden" id="stopBtn" onclick="doStop()">Stop</button>
+        <button class="btn btn-secondary" onclick="doScan()">Scan</button>
+      </div>
+
+      <div class="progress-bar hidden" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+        <div class="progress-text" id="progressText">0 / 0</div>
+      </div>
+    </section>
+
+    <!-- Settings (collapsed) -->
+    <details class="settings-toggle" id="settingsSection">
+      <summary>Settings</summary>
+      <div class="settings-grid">
+        <div class="setting">
+          <label>Hourly Limit</label>
+          <input type="number" id="hourlyLimit" value="40" min="1" max="200">
+        </div>
+        <div class="setting">
+          <label>Daily Limit</label>
+          <input type="number" id="dailyLimit" value="200" min="1" max="1000">
+        </div>
+        <div class="setting">
+          <label>Min Delay (s)</label>
+          <input type="number" id="minDelay" value="8" min="1" max="30">
+        </div>
+        <div class="setting">
+          <label>Max Delay (s)</label>
+          <input type="number" id="maxDelay" value="15" min="1" max="30">
+        </div>
+        <div class="setting">
+          <label>Break Every</label>
+          <input type="number" id="breakEvery" value="40" min="5" max="100">
+        </div>
+        <div class="setting">
+          <label>Break (min)</label>
+          <input type="number" id="breakMin" value="2" min="1" max="10">
+        </div>
+      </div>
+      <p class="safety-hint">Conservative defaults. Increase only if your account is established (1+ year, 1000+ followers).</p>
+    </details>
+
+    <!-- Activity Log -->
+    <div class="log-container" id="logContainer">
+      <p class="log-empty">No activity yet.</p>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
